@@ -1,8 +1,12 @@
+import api from './api';
+import axios from "axios";
+
 class App {
     constructor() {
         this.repositories = [];
 
         this.formEl = document.getElementById("repo-form");
+        this.inputEl = document.getElementById("repository");
         this.listEl = document.getElementById("repo-list");
 
         this.registerHandlers();
@@ -12,15 +16,29 @@ class App {
         this.formEl.onsubmit = event => this.addRepository(event);
     }
 
-    addRepository(event) {
+    async addRepository(event) {
         event.preventDefault();
 
+        const repoInput = this.inputEl.value;
+        console.log(repoInput);
+
+        if (repoInput.length === 0) 
+            return;
+        
+        var response = await axios.get(`https://api.github.com/repos/${repoInput}`);
+
+        console.log(response.data);
+
+        const { name, description, html_url, owner: {avatar_url} } = response.data;
+
         this.repositories.push({
-            nome: "",
-            description: "",
-            avatar_url: "",
-            html_url: ""
+            name,
+            description,
+            avatar_url,
+            html_url,
         });
+
+        this.inputEl.value = "";
 
         this.render();
     }
@@ -40,6 +58,7 @@ class App {
 
             let linkEl = document.createElement("a");
             linkEl.setAttribute("target", "_blank");
+            linkEl.setAttribute("href", repo.html_url);
             linkEl.appendChild(document.createTextNode("Acessar"));
 
             let listItemEl = document.createElement("li");
